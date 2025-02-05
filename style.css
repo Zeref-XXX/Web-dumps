@@ -1,0 +1,15 @@
+.sandeep{
+    font-size: 3vw;
+    color: red;
+    text-decoration: none;
+    text-transform: uppercase;
+    background-color: orchid;
+    padding: 1vw;
+    border-radius: 1vw;
+}
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
