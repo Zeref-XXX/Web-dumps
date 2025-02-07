@@ -1,15 +1,20 @@
 .hey{
     font-size: 3vw;
-    color: red;
+    color: rgb(144, 80, 80);
     text-decoration: none;
     text-transform: uppercase;
     background-color: orchid;
     padding: 1vw;
     border-radius: 1vw;
+    border-style: none;
 }
 body{
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background-color: rgb(85, 92, 193);
+}
+a{
+    margin: 1vw;
 }
