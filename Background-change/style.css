@@ -1,3 +1,10 @@
 body{
-    background-color: blueviolet;
+    height: 100%;
+    width:  100%;
+    display: flex;
+    background-color: rgba(126, 118, 133, 0.322);
+}
+#root{
+    align-items: center;
+    justify-content: center;
 }

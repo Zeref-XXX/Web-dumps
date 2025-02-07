@@ -1,14 +1,17 @@
-const e=document.getElementById("root");
+const e = document.getElementById("root");
+const body = document.querySelector('body');
+const reset = document.getElementById('reset');
+const h = document.querySelector('h1');
 
-
-e.addEventListener( 'click',(event)=>{
-
-    e.innerText="hello";
+reset.addEventListener('click', (event) => {
+    document.body.style.backgroundColor = "whitesmoke";
+    // console.log(event.target);
+    h.style.backgroundColor="yellow";
+    h.style.color = "white";
 
 })
 
-// function print(){
-//     const e=document.getElementById("root");
-//     e.innerHTML="<h1>HELLO</h1>"
-    
-// }
+e.addEventListener('click', (event) => {
+    h.style.color = "black";
+    document.body.style.backgroundColor = event.target.id;
+})
