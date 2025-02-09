@@ -1,5 +1,7 @@
-const e =document.getElementById("root");
+const b = document.querySelector('body');
 
- function App(){
-    e.innerHTML='<h2>HELLOO</h2>'
- }
+console.log(typeof b);
+const outer=document.getElementById("root");
+
+
+const top=document.createElement("div");
