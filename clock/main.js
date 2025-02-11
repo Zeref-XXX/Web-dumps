@@ -21,7 +21,7 @@ function clock() {
     const date = new Date();
     const now = date.toLocaleTimeString();
     timer.innerHTML = now.toUpperCase();
-    timer.style.border="2px solid black";
+    // timer.style.border="2px solid black";
 }
 
 function keyhandle(key) {
@@ -57,7 +57,7 @@ function fix(){
     let f=document.getElementById("fixed");
     f.style.fontSize="100px";
     f.innerText="HEYY Refresh";
-    f.style.border="2px solid black";
+    // f.style.border="2px solid black";
     f.style.margin="auto";
 }
 
