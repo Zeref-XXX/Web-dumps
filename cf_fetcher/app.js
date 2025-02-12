@@ -21,10 +21,12 @@ async function fetching() {
 
 function createcard(data) {
     let card = document.createElement("div");
+    card.className="cards";
 
     let profile = document.createElement('div');
+    profile.className="ps";
     let details = document.createElement('div');
-
+    details.className="ds";
 
 
     let uname = document.createElement("h2");
@@ -56,18 +58,18 @@ function createcard(data) {
     // console.log(fc);
     root.appendChild(card);
 
-    st(card, details, profile);
+    // st(card, details, profile);
 }
 
-function st(card, details, profile) {
-    card.style.display = "flex";
-    card.style.border = "2px solid blue";
-    card.style.padding = "10px";
+// function st(card, details, profile) {
+//     // card.style.display = "flex";
+//     // card.style.border = "2px solid blue";
+//     // card.style.padding = "5px";
 
 
 
-    details.style.marginLeft = "10px";
-    details.style.font
-}
+//     // details.style.marginLeft = "5px";
+ 
+// }
 
 
