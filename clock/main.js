@@ -1,3 +1,9 @@
+// document.querySelector('h3').style.width="100vw";
+document.querySelector('h3').style.height="40px";
+// document.querySelector('h3').style.border="2px solid black";
+document.querySelector('h3').style.textAlign="center";
+// document.querySelector('h3').style.backgroundColor="red";
+
 const body = document.querySelector(`body`);
 body.style.padding = "0";
 body.style.margin = "0";
@@ -60,5 +66,3 @@ function fix(){
     // f.style.border="2px solid black";
     f.style.margin="auto";
 }
-
-
