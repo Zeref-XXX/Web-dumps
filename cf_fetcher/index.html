@@ -9,15 +9,19 @@
 </head>
 
 <body style="height: 100vh; width: 100%;   padding: 20px;">
-    <h1>Code forces user </h1>
-    <input type="text" placeholder="Type username" id="input" />
+    <h1>Enter two codeforces user </h1>
+    <input type="text" placeholder="first user" value="" id="input1" required/>
+    <input type="text" placeholder="second user" value="" id="input2" required/>
     <button value="Search" onclick="fetching()">Submit</button>
     <br><br>
     <div id="outer" style="height: 100vh; width: 100%;  margin: auto; ">
         <div id="root" style="display: flex; flex-wrap: wrap;"></div>
+        <!-- <div id="root1" style="display: flex; flex-wrap: wrap;"></div>
+        <div id="root2" style="display: flex; flex-wrap: wrap;"></div> -->
 
     </div>
     <script src="app.js"></script>
+    <!-- <script src="app1.js"></script> -->
 </body>
 
 </html>

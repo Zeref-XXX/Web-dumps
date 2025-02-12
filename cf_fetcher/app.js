@@ -1,19 +1,26 @@
 
-
 const root = document.getElementById("root");
 
 async function fetching() {
-    let inputs = document.getElementById("input");
-    let v = inputs.value; 
+    let in1 = document.getElementById("input1");
+    let user1 = in1.value; 
+    
+    let in2=document.getElementById("input2");
+    let user2 = in2.value; 
+    
 
-    let response = await fetch(`https://codeforces.com/api/user.info?handles=${v}&checkHistoricHandles=false`);
+    let response1 = await fetch(`https://codeforces.com/api/user.info?handles=${user1}&checkHistoricHandles=false`);
+    let response2 = await fetch(`https://codeforces.com/api/user.info?handles=${user2}&checkHistoricHandles=false`);
 
 
-    let raw = await response.json();
-    let data = raw.result[0];
+    let raw1 = await response1.json();
+    let raw2 = await response2.json();
+    let data1 = raw1.result[0];
+    let data2 = raw2.result[0];
     // console.log(data.handle);
     // console.log(data.rating);
-    createcard(data);
+    createcard(data1);
+    createcard(data2);
     // console.log(typeof data);
 
 }
