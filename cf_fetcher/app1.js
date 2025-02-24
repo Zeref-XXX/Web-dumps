@@ -1,13 +1,10 @@
-// // let root1=document.getElementById("root");
+const r1=document.getElementById("root1");
+const r2=document.getElementById("root2");
+const ims=document.getElementById("imgs");
 
 
-// // console.log(root1)
-// // let response1 = await fetch(`https://codeforces.com/api/user.info?handles=${user1}&checkHistoricHandles=false`);
+const outer =document.getElementById("outer");
 
-// for (let i = 1; i <= 2; i++) {
-//     let `root${i}` = document.getElementById(`root${i}`);
-    
-//     let `in${i}`=document.getElementById(`input${i}`).value;
-//     console.log("Hye");
-//     console.log(`in${i}`);
-// }
+function fetching(){
+ims.innerText="HELLOO";
+}

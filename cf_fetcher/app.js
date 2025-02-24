@@ -16,13 +16,9 @@ async function fetching() {
     let raw1 = await response1.json();
     let raw2 = await response2.json();
     let data1 = raw1.result[0];
-    let data2 = raw2.result[0];
-    // console.log(data.handle);
-    // console.log(data.rating);
+    let data2 = raw2.result[0]; 
     createcard(data1);
-    createcard(data2);
-    // console.log(typeof data);
-
+    createcard(data2); 
 }
 
 
