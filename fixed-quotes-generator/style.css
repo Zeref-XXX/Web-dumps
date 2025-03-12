@@ -1,15 +1,24 @@
-#main{
-    background-color: aquamarine;
-    font-size: 30px; 
+*{
+    margin:0px;
+    box-sizing: border-box;
+    padding: 0px;
+}
+body{
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-
+    
 }
-h2{ 
-    display:no-flex ;
-}
-#root{
+#content{
     margin: auto;
-    height: 20vh;
+    justify-items: center; 
+    /* border: 3px saddlebrown solid;  */
+    font-size: 2vw;
+    background-color: rgba(118, 172, 219, 0.909);
+    border-radius: 2vw;
+    padding: 2VW;
+}
+#main{
+    /* border:3px dotted rgb(187, 53, 76); */
 }
