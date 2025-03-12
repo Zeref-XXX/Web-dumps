@@ -1,20 +1,41 @@
-.hey{
-    font-size: 3vw;
+.hey {
+    font-size: 2vw;
     color: rgb(144, 80, 80);
     text-decoration: none;
     text-transform: uppercase;
-    background-color: orchid;
+    background-color: rgb(235, 228, 234);
     padding: 1vw;
     border-radius: 1vw;
     border-style: none;
 }
-body{
+
+body {
+    text-align: center;
+    background-color: rgb(133, 99, 225);
+}
+
+#heading {
+    font-size: 4vw;
+    /* border-bottom: 2px solid black; */    
+}
+#heading h2{
+    border-radius: 2vw;
+}
+#head {
+    background-color: antiquewhite;
+    border: 2px solid black;
+    /* margin: auto; */
+
+}
+
+#content {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: rgb(85, 92, 193);
+    height: 50vh;
+    text-align: center;
 }
-a{
-    margin: 1vw;
+
+a {
+    margin: 0.8vw;
 }
