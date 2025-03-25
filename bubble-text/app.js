@@ -14,8 +14,16 @@ document.addEventListener("click", (event) => {
     const element = document.createElement("div");
     element.className = "circle";
     element.innerText = text[index];
-    element.style.color = color[index];
-    element.style.left = `${x - 20}` + "px";
+
+    const i= Math.floor(Math.random()*10);
+    element.style.color =`#${i}f${i-1}fff`;
+    element.style.backgroundColor =`#${i%4}f${i%8}f${i%9}f`;
+
+    // element.style.color =`red`;
+    //  i= Math.floor(Math.random()*10);
+    // element.style.backgroundColor=`red`;
+
+     element.style.left = `${x - 20}` + "px";
     element.style.top = `${y-20}` + "px";
     console.log(x, y);
     console.log(element);
@@ -23,6 +31,9 @@ document.addEventListener("click", (event) => {
     document.body.append(element)
 
 
+
     setTimeout(() => element.remove(), 900);
 
 })
+
+
