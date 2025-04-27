@@ -2,5 +2,6 @@ fixed-quotes-generator/
 cf_fetcher/
 .vscode/
 simple-calculator
-
+board
+drawing-board
 temp
