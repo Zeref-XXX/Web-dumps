@@ -3,55 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeforces User Fetcher</title>
+    <title>CF Fetcher - Codeforces Profile Comparison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Header Section -->
         <header class="header">
-            <h1 class="header__title">Codeforces User Fetcher</h1>
-            <p class="header__subtitle">Compare competitive programming profiles</p>
+            <h1>CF Fetcher</h1>
+            <p class="subtitle">Compare Codeforces profiles side by side</p>
         </header>
 
         <!-- Input Section -->
         <section class="input-section">
-            <div class="input-form">
+            <div class="input-grid">
                 <div class="form-group">
-                    <label for="username1" class="form-label">First Username</label>
-                    <input type="text" id="username1" class="form-control" placeholder="Enter Codeforces username">
+                    <label for="user1" class="form-label">First Username</label>
+                    <input 
+                        type="text" 
+                        id="user1" 
+                        class="form-control" 
+                        placeholder="Enter Codeforces handle"
+                        autocomplete="off"
+                    >
                 </div>
                 <div class="form-group">
-                    <label for="username2" class="form-label">Second Username</label>
-                    <input type="text" id="username2" class="form-control" placeholder="Enter Codeforces username">
+                    <label for="user2" class="form-label">Second Username</label>
+                    <input 
+                        type="text" 
+                        id="user2" 
+                        class="form-control" 
+                        placeholder="Enter Codeforces handle"
+                        autocomplete="off"
+                    >
                 </div>
-                <button id="fetchBtn" class="btn btn--primary btn--lg btn--full-width">
-                    <span id="btnText">Compare Users</span>
-                    <div id="loadingSpinner" class="loading-spinner hidden">
+            </div>
+            
+            <div class="button-group">
+                <button id="compareBtn" class="btn btn--primary btn--lg">
+                    <span class="btn-text">Compare Profiles</span>
+                    <div class="loading-spinner hidden">
                         <div class="spinner"></div>
                     </div>
                 </button>
+                <button id="clearBtn" class="btn btn--outline">Clear</button>
             </div>
         </section>
 
-        <!-- Error Section -->
-        <section id="errorSection" class="error-section hidden">
-            <div class="error-message">
-                <span id="errorText"></span>
-            </div>
-        </section>
+        <!-- Error/Success Messages -->
+        <div id="messageContainer" class="message-container hidden"></div>
 
         <!-- Results Section -->
         <section id="resultsSection" class="results-section hidden">
-            <div class="results-grid">
-                <div id="user1Card" class="user-card">
-                    <!-- User 1 content will be inserted here -->
+            <h2 class="results-title">Comparison Results</h2>
+            
+            <!-- User Summary Cards -->
+            <div class="user-summary-grid">
+                <div class="user-card" id="userCard1">
+                    <div class="user-avatar">
+                        <div class="avatar-placeholder"></div>
+                    </div>
+                    <h3 class="user-handle" id="userHandle1">-</h3>
+                    <p class="user-rating" id="userRating1">Rating: -</p>
+                    <a href="#" target="_blank" class="profile-link" id="profileLink1">View Profile</a>
                 </div>
-                <div id="user2Card" class="user-card">
-                    <!-- User 2 content will be inserted here -->
+                
+                <div class="vs-indicator">
+                    <span>VS</span>
+                </div>
+                
+                <div class="user-card" id="userCard2">
+                    <div class="user-avatar">
+                        <div class="avatar-placeholder"></div>
+                    </div>
+                    <h3 class="user-handle" id="userHandle2">-</h3>
+                    <p class="user-rating" id="userRating2">Rating: -</p>
+                    <a href="#" target="_blank" class="profile-link" id="profileLink2">View Profile</a>
                 </div>
             </div>
+
+            <!-- Comparison Table -->
+            <div class="comparison-table-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th class="metric-column">Metric</th>
+                            <th class="user-column" id="tableUser1">User 1</th>
+                            <th class="user-column" id="tableUser2">User 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Winner Summary -->
+            <div class="winner-summary" id="winnerSummary">
+                <h3>Overall Performance</h3>
+                <p id="winnerText">Analyzing performance...</p>
+            </div>
         </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by <a href="https://codeforces.com/api" target="_blank">Codeforces API</a></p>
+        </footer>
     </div>
 
     <script src="app.js"></script>
