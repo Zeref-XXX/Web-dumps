@@ -3,115 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CF Fetcher - Codeforces Profile Comparison</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Codeforces Profile Fetcher</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <!-- Header Section -->
+        <!-- Header -->
         <header class="header">
-            <h1>CF Fetcher</h1>
-            <p class="subtitle">Compare Codeforces profiles side by side</p>
+            <h1 class="header__title">Codeforces Profile Fetcher</h1>
+            <p class="header__subtitle">Discover and compare competitive programming profiles</p>
         </header>
 
-        <!-- Input Section -->
-        <section class="input-section">
-            <div class="input-grid">
-                <div class="form-group">
-                    <label for="user1" class="form-label">First Username</label>
-                    <input 
-                        type="text" 
-                        id="user1" 
-                        class="form-control" 
-                        placeholder="Enter Codeforces handle"
-                        autocomplete="off"
-                    >
-                </div>
-                <div class="form-group">
-                    <label for="user2" class="form-label">Second Username</label>
-                    <input 
-                        type="text" 
-                        id="user2" 
-                        class="form-control" 
-                        placeholder="Enter Codeforces handle"
-                        autocomplete="off"
-                    >
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-tabs">
+                <button class="tab-btn active" data-tab="single">Single Profile</button>
+                <button class="tab-btn" data-tab="compare">Compare Profiles</button>
+            </div>
+
+            <!-- Single Profile Tab -->
+            <div class="tab-content active" id="single-tab">
+                <div class="search-form">
+                    <input type="text" id="single-username" class="form-control" placeholder="Enter Codeforces handle (e.g., tourist)">
+                    <button class="btn btn--primary" id="fetch-single">
+                        <span class="btn-text">Fetch Profile</span>
+                        <span class="loading-spinner hidden">⟳</span>
+                    </button>
                 </div>
             </div>
-            
-            <div class="button-group">
-                <button id="compareBtn" class="btn btn--primary btn--lg">
-                    <span class="btn-text">Compare Profiles</span>
-                    <div class="loading-spinner hidden">
-                        <div class="spinner"></div>
-                    </div>
-                </button>
-                <button id="clearBtn" class="btn btn--outline">Clear</button>
+
+            <!-- Compare Profiles Tab -->
+            <div class="tab-content" id="compare-tab">
+                <div class="search-form compare-form">
+                    <input type="text" id="username-1" class="form-control" placeholder="First handle">
+                    <input type="text" id="username-2" class="form-control" placeholder="Second handle">
+                    <button class="btn btn--primary" id="compare-users">
+                        <span class="btn-text">Compare Users</span>
+                        <span class="loading-spinner hidden">⟳</span>
+                    </button>
+                </div>
             </div>
         </section>
 
-        <!-- Error/Success Messages -->
-        <div id="messageContainer" class="message-container hidden"></div>
+        <!-- Error Display -->
+        <div class="error-message hidden" id="error-message">
+            <div class="status status--error" id="error-text"></div>
+        </div>
 
         <!-- Results Section -->
-        <section id="resultsSection" class="results-section hidden">
-            <h2 class="results-title">Comparison Results</h2>
-            
-            <!-- User Summary Cards -->
-            <div class="user-summary-grid">
-                <div class="user-card" id="userCard1">
-                    <div class="user-avatar">
-                        <div class="avatar-placeholder"></div>
-                    </div>
-                    <h3 class="user-handle" id="userHandle1">-</h3>
-                    <p class="user-rating" id="userRating1">Rating: -</p>
-                    <a href="#" target="_blank" class="profile-link" id="profileLink1">View Profile</a>
+        <section class="results-section" id="results-section">
+            <!-- Single Profile Results -->
+            <div class="single-results hidden" id="single-results">
+                <div class="profile-card" id="profile-card-single">
+                    <!-- Profile content will be injected here -->
                 </div>
-                
-                <div class="vs-indicator">
-                    <span>VS</span>
-                </div>
-                
-                <div class="user-card" id="userCard2">
-                    <div class="user-avatar">
-                        <div class="avatar-placeholder"></div>
+                <div class="submissions-section" id="submissions-section">
+                    <h3>Recent Submissions</h3>
+                    <div class="submissions-list" id="submissions-list">
+                        <!-- Submissions will be injected here -->
                     </div>
-                    <h3 class="user-handle" id="userHandle2">-</h3>
-                    <p class="user-rating" id="userRating2">Rating: -</p>
-                    <a href="#" target="_blank" class="profile-link" id="profileLink2">View Profile</a>
                 </div>
             </div>
 
-            <!-- Comparison Table -->
-            <div class="comparison-table-container">
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th class="metric-column">Metric</th>
-                            <th class="user-column" id="tableUser1">User 1</th>
-                            <th class="user-column" id="tableUser2">User 2</th>
-                        </tr>
-                    </thead>
-                    <tbody id="comparisonTableBody">
-                        <!-- Table rows will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Winner Summary -->
-            <div class="winner-summary" id="winnerSummary">
-                <h3>Overall Performance</h3>
-                <p id="winnerText">Analyzing performance...</p>
+            <!-- Compare Results -->
+            <div class="compare-results hidden" id="compare-results">
+                <div class="comparison-grid">
+                    <div class="profile-card" id="profile-card-1">
+                        <!-- First profile content -->
+                    </div>
+                    <div class="profile-card" id="profile-card-2">
+                        <!-- Second profile content -->
+                    </div>
+                </div>
             </div>
         </section>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>Powered by <a href="https://codeforces.com/api" target="_blank">Codeforces API</a></p>
-        </footer>
     </div>
 
     <script src="app.js"></script>

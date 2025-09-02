@@ -1,418 +1,427 @@
-// CF Fetcher Application Logic
-class CFComparator {
+class CodeforcesFetcher {
     constructor() {
-        this.baseUrl = 'https://codeforces.com/api/';
-        this.users = {};
-        this.initializeEventListeners();
-        this.validateInputs(); // Initialize button state
+        this.baseURL = 'https://codeforces.com/api';
+        this.cache = new Map();
+        this.ratingColors = {
+            'newbie': '#808080',
+            'pupil': '#008000',
+            'specialist': '#03A89E',
+            'expert': '#0000FF',
+            'candidate master': '#AA00AA',
+            'master': '#FF8C00',
+            'international master': '#FF8C00',
+            'grandmaster': '#FF0000',
+            'international grandmaster': '#FF0000',
+            'legendary grandmaster': '#FF0000'
+        };
+        this.init();
     }
 
-    initializeEventListeners() {
-        const compareBtn = document.getElementById('compareBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const user1Input = document.getElementById('user1');
-        const user2Input = document.getElementById('user2');
+    init() {
+        this.setupEventListeners();
+        // Ensure results section is visible but content is hidden initially
+        document.getElementById('results-section').style.display = 'block';
+    }
 
-        compareBtn.addEventListener('click', () => this.handleCompare());
-        clearBtn.addEventListener('click', () => this.handleClear());
-
-        // Allow Enter key to trigger comparison
-        [user1Input, user2Input].forEach(input => {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.handleCompare();
-                }
-            });
+    setupEventListeners() {
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
         });
 
-        // Real-time validation
-        [user1Input, user2Input].forEach(input => {
-            input.addEventListener('input', () => this.validateInputs());
+        // Single profile fetch
+        document.getElementById('fetch-single').addEventListener('click', () => {
+            this.fetchSingleProfile();
+        });
+
+        // Compare profiles
+        document.getElementById('compare-users').addEventListener('click', () => {
+            this.compareProfiles();
+        });
+
+        // Enter key support
+        document.getElementById('single-username').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.fetchSingleProfile();
+        });
+
+        document.getElementById('username-1').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.compareProfiles();
+        });
+
+        document.getElementById('username-2').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.compareProfiles();
         });
     }
 
-    validateInputs() {
-        const user1 = document.getElementById('user1').value.trim();
-        const user2 = document.getElementById('user2').value.trim();
-        const compareBtn = document.getElementById('compareBtn');
+    switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
 
-        if (user1 && user2) {
-            compareBtn.disabled = false;
-            compareBtn.style.opacity = '1';
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === `${tabName}-tab`);
+        });
+
+        // Hide results when switching tabs
+        this.hideAllResults();
+        this.hideError();
+    }
+
+    hideAllResults() {
+        const singleResults = document.getElementById('single-results');
+        const compareResults = document.getElementById('compare-results');
+        if (singleResults) singleResults.classList.add('hidden');
+        if (compareResults) compareResults.classList.add('hidden');
+    }
+
+    hideError() {
+        const errorMessage = document.getElementById('error-message');
+        if (errorMessage) errorMessage.classList.add('hidden');
+    }
+
+    showError(message) {
+        const errorText = document.getElementById('error-text');
+        const errorMessage = document.getElementById('error-message');
+        if (errorText) errorText.textContent = message;
+        if (errorMessage) errorMessage.classList.remove('hidden');
+    }
+
+    setLoading(buttonId, isLoading) {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+        
+        const spinner = button.querySelector('.loading-spinner');
+        const text = button.querySelector('.btn-text');
+        
+        if (isLoading) {
+            if (spinner) spinner.classList.remove('hidden');
+            if (text) text.classList.add('hidden');
+            button.disabled = true;
         } else {
-            compareBtn.disabled = true;
-            compareBtn.style.opacity = '0.6';
+            if (spinner) spinner.classList.add('hidden');
+            if (text) text.classList.remove('hidden');
+            button.disabled = false;
         }
     }
 
-    async handleCompare() {
-        const user1Handle = document.getElementById('user1').value.trim();
-        const user2Handle = document.getElementById('user2').value.trim();
-
-        if (!user1Handle || !user2Handle) {
-            this.showMessage('Please enter both usernames', 'error');
-            return;
+    async fetchUserInfo(handle) {
+        const cacheKey = `user_${handle}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
         }
-
-        if (user1Handle.toLowerCase() === user2Handle.toLowerCase()) {
-            this.showMessage('Please enter different usernames', 'error');
-            return;
-        }
-
-        this.setLoadingState(true);
-        this.hideResults();
-        this.hideMessage();
 
         try {
-            // Fetch both users' data - use sample data for demonstration
-            const user1Data = await this.fetchUserDataWithFallback(user1Handle);
-            const user2Data = await this.fetchUserDataWithFallback(user2Handle);
+            const response = await fetch(`${this.baseURL}/user.info?handles=${handle}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.status !== 'OK') {
+                throw new Error(data.comment || 'User not found');
+            }
 
-            this.users = { user1: user1Data, user2: user2Data };
-            this.displayResults();
-            this.showMessage('Comparison completed successfully!', 'success');
+            if (!data.result || data.result.length === 0) {
+                throw new Error('User not found');
+            }
 
+            const userInfo = data.result[0];
+            this.cache.set(cacheKey, userInfo);
+            return userInfo;
         } catch (error) {
-            console.error('Error comparing users:', error);
-            this.showMessage(error.message, 'error');
+            console.error('Fetch user info error:', error);
+            if (error.message.includes('User not found')) {
+                throw new Error(`User "${handle}" not found`);
+            }
+            throw new Error(`Failed to fetch user info: ${error.message}`);
+        }
+    }
+
+    async fetchUserSubmissions(handle, count = 10) {
+        const cacheKey = `submissions_${handle}_${count}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+
+        try {
+            const response = await fetch(`${this.baseURL}/user.status?handle=${handle}&from=1&count=${count}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.status !== 'OK') {
+                throw new Error(data.comment || 'Submissions not found');
+            }
+
+            const submissions = data.result || [];
+            this.cache.set(cacheKey, submissions);
+            return submissions;
+        } catch (error) {
+            console.error('Fetch submissions error:', error);
+            // Don't fail the whole request if submissions can't be fetched
+            return [];
+        }
+    }
+
+    async fetchSingleProfile() {
+        const handle = document.getElementById('single-username').value.trim();
+        if (!handle) {
+            this.showError('Please enter a valid handle');
+            return;
+        }
+
+        this.hideError();
+        this.hideAllResults();
+        this.setLoading('fetch-single', true);
+
+        try {
+            // Fetch user info first
+            const userInfo = await this.fetchUserInfo(handle);
+            
+            // Try to fetch submissions, but don't fail if it doesn't work
+            let submissions = [];
+            try {
+                submissions = await this.fetchUserSubmissions(handle, 10);
+            } catch (error) {
+                console.warn('Could not fetch submissions:', error);
+            }
+
+            // Render the profile
+            this.renderProfile(userInfo, 'profile-card-single');
+            
+            // Render submissions
+            const submissionsSection = document.getElementById('submissions-section');
+            const submissionsList = document.getElementById('submissions-list');
+            if (submissionsSection && submissionsList) {
+                this.renderSubmissions(submissions, 'submissions-list');
+            }
+            
+            // Show results
+            const singleResults = document.getElementById('single-results');
+            if (singleResults) {
+                singleResults.classList.remove('hidden');
+            }
+            
+        } catch (error) {
+            console.error('Fetch single profile error:', error);
+            this.showError(error.message);
         } finally {
-            this.setLoadingState(false);
+            this.setLoading('fetch-single', false);
         }
     }
 
-    async fetchUserDataWithFallback(handle) {
-        const handleLower = handle.toLowerCase();
-        
-        // Use sample data for known users or create mock data for others
-        if (handleLower === 'tourist') {
-            return this.getSampleData('user1');
-        } else if (handleLower === 'benq' || handleLower === 'benjamin_qi') {
-            return this.getSampleData('user2');
-        } else {
-            // Generate realistic mock data for any other username
-            return this.generateMockData(handle);
+    async compareProfiles() {
+        const handle1 = document.getElementById('username-1').value.trim();
+        const handle2 = document.getElementById('username-2').value.trim();
+
+        if (!handle1 || !handle2) {
+            this.showError('Please enter both handles for comparison');
+            return;
+        }
+
+        this.hideError();
+        this.hideAllResults();
+        this.setLoading('compare-users', true);
+
+        try {
+            const [user1, user2] = await Promise.all([
+                this.fetchUserInfo(handle1),
+                this.fetchUserInfo(handle2)
+            ]);
+
+            this.renderProfile(user1, 'profile-card-1');
+            this.renderProfile(user2, 'profile-card-2');
+            
+            const compareResults = document.getElementById('compare-results');
+            if (compareResults) {
+                compareResults.classList.remove('hidden');
+            }
+            
+        } catch (error) {
+            console.error('Compare profiles error:', error);
+            this.showError(error.message);
+        } finally {
+            this.setLoading('compare-users', false);
         }
     }
 
-    generateMockData(handle) {
-        // Generate realistic but random data for any username
-        const baseRating = 1200 + Math.floor(Math.random() * 2000); // 1200-3200 range
-        const maxRating = baseRating + Math.floor(Math.random() * 400); // Max is higher than current
-        const contests = 10 + Math.floor(Math.random() * 100);
-        const problemsSolved = contests * (5 + Math.floor(Math.random() * 15)); // 5-20 problems per contest
-        
-        return {
-            handle: handle,
-            rating: baseRating,
-            maxRating: maxRating,
-            contests: contests,
-            problemsSolved: problemsSolved,
-            maxUp: 50 + Math.floor(Math.random() * 200),
-            maxDown: -(10 + Math.floor(Math.random() * 150)),
-            registrationTime: this.getRandomDate(2010, 2023),
-            lastOnline: this.getRandomDate(2024, 2025),
-            country: this.getRandomCountry()
-        };
+    generateAvatar(handle, rank) {
+        const firstLetter = handle.charAt(0).toUpperCase();
+        const rankClass = rank ? rank.replace(/\s+/g, '-').toLowerCase() : 'newbie';
+        return `<div class="profile-avatar avatar-${rankClass}">${firstLetter}</div>`;
     }
 
-    getRandomDate(startYear, endYear) {
-        const start = new Date(startYear, 0, 1);
-        const end = new Date(endYear, 11, 31);
-        const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-        return randomDate.toLocaleDateString();
+    getRatingClass(rank) {
+        return rank ? rank.replace(/\s+/g, '-').toLowerCase() : 'newbie';
     }
 
-    getRandomCountry() {
-        const countries = ['USA', 'Russia', 'China', 'India', 'Ukraine', 'Belarus', 'Poland', 'Japan', 'Canada', 'Germany'];
-        return countries[Math.floor(Math.random() * countries.length)];
-    }
-
-    getSampleData(userKey) {
-        const sampleData = {
-            user1: {
-                handle: "tourist",
-                rating: 3822,
-                maxRating: 4004,
-                contests: 156,
-                problemsSolved: 2547,
-                maxUp: 154,
-                maxDown: -89,
-                registrationTime: "1/1/2010",
-                lastOnline: "1/15/2025",
-                country: "Belarus"
-            },
-            user2: {
-                handle: "Benq",
-                rating: 3729,
-                maxRating: 3803,
-                contests: 94,
-                problemsSolved: 1342,
-                maxUp: 243,
-                maxDown: -156,
-                registrationTime: "3/12/2015",
-                lastOnline: "1/10/2025",
-                country: "USA"
-            }
-        };
-        return sampleData[userKey];
-    }
-
-    displayResults() {
-        this.populateUserCards();
-        this.populateComparisonTable();
-        this.calculateWinner();
-        this.showResults();
-    }
-
-    populateUserCards() {
-        const user1 = this.users.user1;
-        const user2 = this.users.user2;
-
-        // User 1 card
-        document.getElementById('userHandle1').textContent = user1.handle;
-        document.getElementById('userRating1').textContent = `Rating: ${user1.rating}`;
-        document.getElementById('profileLink1').href = `https://codeforces.com/profile/${user1.handle}`;
-        document.querySelector('#userCard1 .avatar-placeholder').textContent = user1.handle.charAt(0).toUpperCase();
-
-        // User 2 card
-        document.getElementById('userHandle2').textContent = user2.handle;
-        document.getElementById('userRating2').textContent = `Rating: ${user2.rating}`;
-        document.getElementById('profileLink2').href = `https://codeforces.com/profile/${user2.handle}`;
-        document.querySelector('#userCard2 .avatar-placeholder').textContent = user2.handle.charAt(0).toUpperCase();
-
-        // Update table headers
-        document.getElementById('tableUser1').textContent = user1.handle;
-        document.getElementById('tableUser2').textContent = user2.handle;
-    }
-
-    populateComparisonTable() {
-        const user1 = this.users.user1;
-        const user2 = this.users.user2;
-        
-        const metrics = [
-            { 
-                name: 'Current Rating', 
-                getValue: (user) => user.rating,
-                format: (value) => value.toLocaleString(),
-                higher: true
-            },
-            { 
-                name: 'Max Rating', 
-                getValue: (user) => user.maxRating,
-                format: (value) => value.toLocaleString(),
-                higher: true
-            },
-            { 
-                name: 'Contests Participated', 
-                getValue: (user) => user.contests,
-                format: (value) => value.toLocaleString(),
-                higher: true
-            },
-            { 
-                name: 'Problems Solved', 
-                getValue: (user) => user.problemsSolved,
-                format: (value) => value.toLocaleString(),
-                higher: true
-            },
-            { 
-                name: 'Max Positive Delta', 
-                getValue: (user) => user.maxUp,
-                format: (value) => `+${value}`,
-                higher: true
-            },
-            { 
-                name: 'Max Negative Delta', 
-                getValue: (user) => user.maxDown,
-                format: (value) => value.toString(),
-                higher: false
-            },
-            { 
-                name: 'Registration Date', 
-                getValue: (user) => user.registrationTime,
-                format: (value) => value,
-                higher: false
-            },
-            { 
-                name: 'Last Online', 
-                getValue: (user) => user.lastOnline,
-                format: (value) => value,
-                higher: null
-            }
-        ];
-
-        const tbody = document.getElementById('comparisonTableBody');
-        tbody.innerHTML = '';
-
-        metrics.forEach(metric => {
-            const row = document.createElement('tr');
-            
-            const value1 = metric.getValue(user1);
-            const value2 = metric.getValue(user2);
-            
-            let class1 = '';
-            let class2 = '';
-            
-            if (metric.higher !== null) {
-                if (typeof value1 === 'number' && typeof value2 === 'number') {
-                    if (metric.higher) {
-                        // Higher is better
-                        if (value1 > value2) {
-                            class1 = 'better-value';
-                            class2 = 'worse-value';
-                        } else if (value2 > value1) {
-                            class2 = 'better-value';
-                            class1 = 'worse-value';
-                        }
-                    } else {
-                        // Lower is better (like negative delta)
-                        if (value1 < value2) {
-                            class1 = 'better-value';
-                            class2 = 'worse-value';
-                        } else if (value2 < value1) {
-                            class2 = 'better-value';
-                            class1 = 'worse-value';
-                        }
-                    }
-                }
-            }
-            
-            row.innerHTML = `
-                <td class="metric-column">${metric.name}</td>
-                <td class="user-column ${class1}">${metric.format(value1)}</td>
-                <td class="user-column ${class2}">${metric.format(value2)}</td>
-            `;
-            
-            tbody.appendChild(row);
+    formatDate(timestamp) {
+        if (!timestamp) return 'Unknown';
+        return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     }
 
-    calculateWinner() {
-        const user1 = this.users.user1;
-        const user2 = this.users.user2;
-
-        let user1Score = 0;
-        let user2Score = 0;
-
-        // Rating comparison (40% weight)
-        if (user1.rating > user2.rating) user1Score += 4;
-        else if (user2.rating > user1.rating) user2Score += 4;
-
-        // Max rating comparison (30% weight)
-        if (user1.maxRating > user2.maxRating) user1Score += 3;
-        else if (user2.maxRating > user1.maxRating) user2Score += 3;
-
-        // Contests participated (15% weight)
-        if (user1.contests > user2.contests) user1Score += 1.5;
-        else if (user2.contests > user1.contests) user2Score += 1.5;
-
-        // Problems solved (15% weight)
-        if (user1.problemsSolved > user2.problemsSolved) user1Score += 1.5;
-        else if (user2.problemsSolved > user1.problemsSolved) user2Score += 1.5;
-
-        const winnerText = document.getElementById('winnerText');
+    formatLastOnline(timestamp) {
+        if (!timestamp) return 'Unknown';
         
-        if (user1Score > user2Score) {
-            winnerText.innerHTML = `🏆 <strong>${user1.handle}</strong> has a stronger overall profile with better ratings and performance metrics.`;
-            winnerText.style.color = 'var(--color-success)';
-        } else if (user2Score > user1Score) {
-            winnerText.innerHTML = `🏆 <strong>${user2.handle}</strong> has a stronger overall profile with better ratings and performance metrics.`;
-            winnerText.style.color = 'var(--color-success)';
+        const now = Date.now() / 1000;
+        const diff = now - timestamp;
+        
+        if (diff < 3600) {
+            return `${Math.floor(diff / 60)} minutes ago`;
+        } else if (diff < 86400) {
+            return `${Math.floor(diff / 3600)} hours ago`;
         } else {
-            winnerText.innerHTML = `🤝 Both users have comparable performance levels with different strengths.`;
-            winnerText.style.color = 'var(--color-info)';
+            return `${Math.floor(diff / 86400)} days ago`;
         }
     }
 
-    setLoadingState(loading) {
-        const compareBtn = document.getElementById('compareBtn');
-        const btnText = compareBtn.querySelector('.btn-text');
-        const loadingSpinner = compareBtn.querySelector('.loading-spinner');
+    renderProfile(user, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        const displayName = fullName || user.handle;
+        const ratingClass = this.getRatingClass(user.rank);
+        const maxRatingClass = this.getRatingClass(user.maxRank);
 
-        if (loading) {
-            compareBtn.classList.add('loading');
-            compareBtn.disabled = true;
-            btnText.textContent = 'Comparing...';
-            loadingSpinner.classList.remove('hidden');
-        } else {
-            compareBtn.classList.remove('loading');
-            compareBtn.disabled = false;
-            btnText.textContent = 'Compare Profiles';
-            loadingSpinner.classList.add('hidden');
+        container.innerHTML = `
+            <div class="profile-header">
+                ${this.generateAvatar(user.handle, user.rank)}
+                <h2 class="profile-name">${displayName}</h2>
+                <div class="profile-handle">@${user.handle}</div>
+                <div class="profile-rank rating-${ratingClass}">${user.rank || 'unrated'}</div>
+            </div>
+            <div class="profile-body">
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value rating-${ratingClass}">${user.rating || 0}</div>
+                        <div class="stat-label">Current Rating</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value rating-${maxRatingClass}">${user.maxRating || 0}</div>
+                        <div class="stat-label">Max Rating</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${user.contribution || 0}</div>
+                        <div class="stat-label">Contribution</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${user.friendOfCount || 0}</div>
+                        <div class="stat-label">Friends</div>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    ${user.country ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Country</span>
+                        <span class="detail-value">${user.country}</span>
+                    </div>
+                    ` : ''}
+                    ${user.city ? `
+                    <div class="detail-item">
+                        <span class="detail-label">City</span>
+                        <span class="detail-value">${user.city}</span>
+                    </div>
+                    ` : ''}
+                    ${user.organization ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Organization</span>
+                        <span class="detail-value">${user.organization}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-item">
+                        <span class="detail-label">Max Rank</span>
+                        <span class="detail-value rating-${maxRatingClass}">${user.maxRank || 'unrated'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Registered</span>
+                        <span class="detail-value">${this.formatDate(user.registrationTimeSeconds)}</span>
+                    </div>
+                    ${user.lastOnlineTimeSeconds ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Last Online</span>
+                        <span class="detail-value">${this.formatLastOnline(user.lastOnlineTimeSeconds)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    getVerdictClass(verdict) {
+        switch (verdict) {
+            case 'OK':
+                return 'verdict-ok';
+            case 'WRONG_ANSWER':
+            case 'RUNTIME_ERROR':
+            case 'COMPILATION_ERROR':
+                return 'verdict-wrong';
+            case 'TIME_LIMIT_EXCEEDED':
+            case 'MEMORY_LIMIT_EXCEEDED':
+                return 'verdict-tle';
+            default:
+                return 'verdict-other';
         }
     }
 
-    showMessage(message, type) {
-        const messageContainer = document.getElementById('messageContainer');
-        messageContainer.textContent = message;
-        messageContainer.className = `message-container ${type}`;
-        messageContainer.classList.remove('hidden');
-
-        // Auto-hide success messages
-        if (type === 'success') {
-            setTimeout(() => {
-                this.hideMessage();
-            }, 3000);
+    formatVerdict(verdict) {
+        switch (verdict) {
+            case 'OK':
+                return 'Accepted';
+            case 'WRONG_ANSWER':
+                return 'Wrong Answer';
+            case 'TIME_LIMIT_EXCEEDED':
+                return 'TLE';
+            case 'MEMORY_LIMIT_EXCEEDED':
+                return 'MLE';
+            case 'RUNTIME_ERROR':
+                return 'Runtime Error';
+            case 'COMPILATION_ERROR':
+                return 'Compilation Error';
+            default:
+                return verdict ? verdict.replace(/_/g, ' ').toLowerCase() : 'Unknown';
         }
     }
 
-    hideMessage() {
-        const messageContainer = document.getElementById('messageContainer');
-        messageContainer.classList.add('hidden');
-    }
-
-    showResults() {
-        const resultsSection = document.getElementById('resultsSection');
-        resultsSection.classList.remove('hidden');
+    renderSubmissions(submissions, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        // Smooth scroll to results with a small delay to ensure rendering
-        setTimeout(() => {
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
-
-    hideResults() {
-        const resultsSection = document.getElementById('resultsSection');
-        resultsSection.classList.add('hidden');
-    }
-
-    handleClear() {
-        // Clear inputs
-        document.getElementById('user1').value = '';
-        document.getElementById('user2').value = '';
-        
-        // Hide results and messages
-        this.hideResults();
-        this.hideMessage();
-        
-        // Reset button state
-        this.validateInputs();
-        
-        // Clear data
-        this.users = {};
-        
-        // Clear table content
-        const tbody = document.getElementById('comparisonTableBody');
-        if (tbody) {
-            tbody.innerHTML = '';
+        if (!submissions || submissions.length === 0) {
+            container.innerHTML = '<div class="text-center">No recent submissions found</div>';
+            return;
         }
-        
-        // Reset user cards
-        document.getElementById('userHandle1').textContent = '-';
-        document.getElementById('userHandle2').textContent = '-';
-        document.getElementById('userRating1').textContent = 'Rating: -';
-        document.getElementById('userRating2').textContent = 'Rating: -';
-        document.getElementById('tableUser1').textContent = 'User 1';
-        document.getElementById('tableUser2').textContent = 'User 2';
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Show confirmation
-        this.showMessage('Form cleared successfully', 'success');
+
+        container.innerHTML = submissions.slice(0, 10).map(submission => {
+            const verdictClass = this.getVerdictClass(submission.verdict);
+            const verdictText = this.formatVerdict(submission.verdict);
+            
+            return `
+                <div class="submission-item">
+                    <div>
+                        <div class="submission-problem">${submission.problem?.name || 'Unknown Problem'}</div>
+                        <div class="submission-contest">Contest ${submission.contestId || 'N/A'} - ${submission.problem?.index || 'N/A'}</div>
+                    </div>
+                    <div class="submission-verdict ${verdictClass}">${verdictText}</div>
+                    <div class="submission-language">${submission.programmingLanguage || 'Unknown'}</div>
+                </div>
+            `;
+        }).join('');
     }
 }
 
-// Initialize the application when DOM is loaded
+// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    new CFComparator();
+    new CodeforcesFetcher();
 });
